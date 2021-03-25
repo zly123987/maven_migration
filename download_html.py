@@ -27,8 +27,8 @@ from subprocess import Popen, PIPE
 
 PROXIES = []
 PROXY_POOL = None
-NUM_WORKERS = 32
-REFRESH_TIMEOUT = 10  # In seconds
+NUM_WORKERS = 1
+REFRESH_TIMEOUT = 60  # In seconds
 counter = 0
 USER_AGENTS = [
     # Chrome
@@ -98,11 +98,11 @@ def get_urls(gavs=None):
     urls = []
     for a in gavs:
         try:
-            group, artifact = a.split(':')
+            group, artifact = a
         except:
             continue
         url = base_url+ group + '/' + artifact
-        filename = 'htmls/'+group+'|'+artifact+'.html'
+        filename = group+'|'+artifact
         urls.append((url, filename))
     return urls
 
@@ -164,24 +164,25 @@ def scheduled_ip_refresh():
 
 
 def download_html(file):
-    with open('migration_map.csv', 'a') as f:
-        writer = csv.writer(f)
-        names = json.load(open(file))
-        # Get the URLs to download
-        request_urls = get_urls(names)
 
-        refresh_proxies()
-        tl.start()
-        request_urls = [('')]
-        # Download in parallel
-        with concurrent.futures.ThreadPoolExecutor(max_workers=NUM_WORKERS) as executor:
-            future_names = [executor.submit(download, url) for url in request_urls]
-            for future in concurrent.futures.as_completed(future_names):
-                # Wait for all threads to complete
-                pass
+    names = list(csv.reader(open(file)))
+    # Get the URLs to download
+    request_urls = get_urls(names)
+    writer = csv.writer(open('url_name.csv', 'w'))
+    for url in request_urls:
+        writer.writerow([url[0], url[1]])
+    exit()
+    refresh_proxies()
+    tl.start()
+    # Download in parallel
+    with concurrent.futures.ThreadPoolExecutor(max_workers=NUM_WORKERS) as executor:
+        future_names = [executor.submit(download, url) for url in request_urls]
+        for future in concurrent.futures.as_completed(future_names):
+            # Wait for all threads to complete
+            pass
 
-        tl.stop()
+    tl.stop()
 
 
 if __name__ == '__main__':
-    download_pom('test_download')
+    download_html('test_download')

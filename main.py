@@ -23,7 +23,7 @@ def save_namelist():
 
 def parse_html(html_doc):
 
-    download_html.download_html('all_name_03_24.json')
+    download_html.download_html('vulLibName.csv')
     # with open('migration_map.csv', 'a') as f:
     #     writer = csv.writer(f)
     #     names = json.load(open('all_name_03_24.json'))
